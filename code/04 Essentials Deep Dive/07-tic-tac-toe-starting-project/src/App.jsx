@@ -5,7 +5,11 @@ import Log from "./components/Log";
 import { WINNING_COMBINATIONS } from "./winning-combinations";
 import GameOver from "./components/GaveOver";
 
-const initialGameBoard = [
+const PLAYERS = {
+  X: "Player 1",
+  O: "Player 2"
+}
+const INITIAL_GAME_BOARD = [
   [null, null, null],
   [null, null, null],
   [null, null, null],
@@ -21,28 +25,8 @@ function derivedActivePlayer(gameTurns) {
   return currentPlayer;
 }
 
-function App() {
-  const [players, setPlayers]= useState({
-    X: "Player 1",
-    O: "Player 2"
-  })
-
-  const [gameTurns, setGameTurns] = useState([]); // [ {player: 'X', rowIndex: 0, columnIndex: 0}, ...
-  //const [activePlayer, setActivePlayer] = useState("X");
-
-  //Manage least amount of state as possible... Direved values 
-
-  const currentPlayer = derivedActivePlayer(gameTurns);
-  
+function derivedWinner(gameBoard, players) {
   let winner = null;
-
-  let gameBoard = [...initialGameBoard].map(array => [...array] );
-
-  for (let turn of gameTurns) {
-    const { square, player } = turn;
-    const { row, col } = square;
-    gameBoard[row][col] = player;
-  }
 
   for(const combination of WINNING_COMBINATIONS){
     const firstSquareSymbol= gameBoard[combination[0].row][combination[0].column];
@@ -54,6 +38,33 @@ function App() {
     }
   
   }
+  return winner;
+}
+
+function derivedGameBoard(gameTurns) {
+  let gameBoard = [...INITIAL_GAME_BOARD].map(array => [...array] );
+
+  for (let turn of gameTurns) {
+    const { square, player } = turn;
+    const { row, col } = square;
+    gameBoard[row][col] = player;
+  }
+  return gameBoard;
+}
+
+function App() {
+  const [players, setPlayers]= useState(PLAYERS)
+
+  const [gameTurns, setGameTurns] = useState([]); // [ {player: 'X', rowIndex: 0, columnIndex: 0}, ...
+  //const [activePlayer, setActivePlayer] = useState("X");
+
+  //Manage least amount of state as possible... Direved values 
+
+  const currentPlayer = derivedActivePlayer(gameTurns);
+  
+  const gameBoard = derivedGameBoard(gameTurns);
+
+  const winner = derivedWinner(gameBoard, players) ;
 
   const hasDraw = gameTurns.length === 9 && !winner;
 
@@ -89,13 +100,13 @@ function handlePlayerNameChange(symbol, newName){
       <div id="game-container">
         <ol id="players" className="highlight-player">
           <Player
-            initialName="Player 1"
+            initialName={PLAYERS.X}
             symbol="X"
             isActive={currentPlayer === "X"}
             onNameChange={handlePlayerNameChange}
           />
           <Player
-            initialName="Player 2"
+            initialName={PLAYERS.O}
             symbol="O"
             isActive={currentPlayer === "O"}
             onNameChange={handlePlayerNameChange}
